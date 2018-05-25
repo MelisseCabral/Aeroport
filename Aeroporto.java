@@ -8,8 +8,8 @@ import java.security.SecureRandom;
 
 public class Aeroporto {
 
-	public static Pista p1 = new Pista(1);
-  public static Pista p2 = new Pista(2);
+public static Pista p1 = new Pista(1);
+public static Pista p2 = new Pista(2);
 
 	public static void main(String[] args) throws InterruptedException {
 		 	
