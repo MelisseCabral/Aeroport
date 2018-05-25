@@ -43,19 +43,18 @@ class Pista {
 
 class Aviao implements Runnable {
     private int id;
-    
+    private int idPista = gerador.nextInt(2);
+    private static final SecureRandom gerador = new SecureRandom();
+ 
     public Aviao(int id) {
     	this.id = id;
     }
     
-    private static final SecureRandom gerador = new SecureRandom();
-    
-    int idPista = gerador.nextInt(2);
-
 	public int getId() {
 		return id;
 	}
 
+    
 	@Override
 	public void run() {
 		
@@ -71,7 +70,7 @@ class Aviao implements Runnable {
         
         acelerar(idPista);
         
-        decolar_avi(idPista);
+        decolar(idPista);
         
         afastar(idPista);
         
@@ -106,63 +105,62 @@ class Aviao implements Runnable {
 	}
 
 	private void manobrar(int idPista) {
-		System.out.println("AV" +id +" Manobrando... Na Pista " + idPista);
-        
         try {
-            Thread.sleep(3000 + gerador.nextInt(5000));
+        	long tempo =  gerador.nextInt(4000) + 3000;
+        	System.out.println("AV" +id +" Manobrando... "  + tempo  + "ms");
+            Thread.sleep(tempo);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println("AV" +id +" Terminou de manobrar. Na Pista " + idPista);
 	}
 
 	private void taxiar(int idPista) {
-		System.out.println("AV" +id +" Taxiando... Na Pista " + idPista);
         try {
-            Thread.sleep(2000 + gerador.nextInt(4000));
+        	long tempo = 2000 + gerador.nextInt(3000);
+            Thread.sleep((tempo));
+            System.out.println("AV" +id +" Taxiando... " + tempo  + "ms");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println("AV" +id +" Terminou de taxiar. Na Pista " + idPista);
 	}
 
 	private void posicionar(int idPista) {
-		System.out.println("AV" +id +" Posicionando...");
         try {
-            Thread.sleep(1000 + gerador.nextInt(4000));
+        	long tempo =  1000 + gerador.nextInt(3000);
+            Thread.sleep(tempo);
+            System.out.println("AV" +id +" Posicionando..." + tempo  + "ms");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println("AV" +id +" Terminou de posicionar. Na Pista " + idPista);
 	}
 
 	private void acelerar(int idPista) {
-		System.out.println("AV" +id +" Acelerando... Na Pista " + idPista);
+		long tempo =  3000 + gerador.nextInt(2000);
+		System.out.println("AV" +id +" Acelerando.. "  + tempo  + "ms");
         try {
-            Thread.sleep(3000 + gerador.nextInt(3000));
+            Thread.sleep(tempo);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println("AV" +id +" Terminou de acelerar. Na Pista " + idPista);
 	}
 
-	private void decolar_avi(int idPista) {
-		System.out.println("AV" +id +" Decolando... Na Pista " + idPista);
+	private void decolar(int idPista) {
+		long tempo =  4000 + gerador.nextInt(3000);
+		System.out.println("AV" +id +" Decolando..." + tempo  + "ms");
         try {
-            Thread.sleep(40 + gerador.nextInt(4000));
+            Thread.sleep(tempo);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println("AV" +id +" Terminou de decolar. Na Pista " + idPista);
 	}
 
 	private void afastar(int idPista) {
-		System.out.println("AV" +id +" Afastando... Na Pista " + idPista);
+		long tempo =  2000 + gerador.nextInt(4000);
+		System.out.println("AV" +id +" Afastando... Na Pista " + idPista + " Tempo: " + tempo  + "ms");
         try {
-            Thread.sleep(20 + gerador.nextInt(5000));
+            Thread.sleep(tempo);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println("AV" +id +" Terminou de se afastar. Na Pista " + idPista);
 	}
 }
