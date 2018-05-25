@@ -4,79 +4,39 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.security.SecureRandom;
 
 public class Aeroporto {
 
-	 public static void main(String[] args) throws InterruptedException {
-		 
-	        LinkedList<Aviao> c = new LinkedList<>();
-	        LinkedList<Aviao> c_2 = new LinkedList<>();
+	public static Pista p1 = new Pista(1);
+  public static Pista p2 = new Pista(2);
+
+	public static void main(String[] args) throws InterruptedException {
+		 	
 	        
-	        // Adiciona avioes randomicamente a suas pistas
+		 	ExecutorService executorService = Executors.newCachedThreadPool();
+
 	        for(int i = 0; i<6 ; i++) {
 	        	Aviao a = new Aviao(i);
-	        	if(a.idPista == 0) {
-	        		c.add(a);
-	        	} else if(a.idPista == 1) {
-	        		c_2.add(a);
-	        	}
+	        	executorService.execute(a);
 	        }
-	       
-	        //Embaralha Avioes
-	        Collections.shuffle(c);
-	        Collections.shuffle(c_2); 
-	        
-	        ExecutorService executorService = Executors.newCachedThreadPool();
-
-	        executorService.execute(new Pista(1, c));
-	        executorService.execute(new Pista(2, c_2));
 
 	        executorService.shutdown();
 	        executorService.awaitTermination(2, TimeUnit.MINUTES);
 	 }
 }
 
-class Pista implements Runnable {
+class Pista {
 	private int idPista;
 	
-	final static Semaphore semaphore1 = new Semaphore(1);
-    final static Semaphore semaphore2 = new Semaphore(1);
-    
-    // Lista de avioes designados para decolar na pista
-    private LinkedList<Aviao> avioes = new LinkedList<Aviao>();
+	final Semaphore semaphore = new Semaphore(1);
 
-    public Pista(int id, LinkedList<Aviao> l) {
+    public Pista(int id) {
     	this.idPista = id;
-        this.avioes = l;
     }
 
-    @Override
-    public void run() {
-    	ExecutorService executorService = Executors.newCachedThreadPool();
-
-    	while(avioes.isEmpty() != true) {
-    		Aviao nextOnFiFo = avioes.remove();
-    		// remove aviao decolado da lista
-    		executorService.execute(nextOnFiFo);
-    	}
-    	executorService.shutdown();
-        try {
-			executorService.awaitTermination(2, TimeUnit.MINUTES);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    }
-    
-	public Aviao remove() {
-		return this.avioes.remove(0);
-	}
-
-	public boolean isEmpty() {
-		return this.avioes.size() == 0;
+	public int getIdPista() {
+		return idPista;
 	}
 
 }
@@ -122,14 +82,14 @@ class Aviao implements Runnable {
 	private void acquireSemaforo(int idPista) {
 		if(idPista == 0){
         	try {
-                Pista.semaphore1.acquire();
+               Aeroporto.p1.semaphore.acquire();
         	} catch (InterruptedException ex) {
                 Logger.getLogger(Aviao.class.getName()).log(Level.SEVERE, null, ex);
         	}
         }
         else if(idPista == 1){
         	try {
-        		Pista.semaphore2.acquire();
+        		Aeroporto.p2.semaphore.acquire();
             } catch (InterruptedException ex) {
                 Logger.getLogger(Aviao.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -137,11 +97,11 @@ class Aviao implements Runnable {
 	}
 	private void realeaseSemaforo(int idPista) {
 		if(idPista == 0){
-			Pista.semaphore1.release();
+			Aeroporto.p1.semaphore.release();
         }
         //Aviao decola em pista 2
         else if(idPista == 1){
-        	Pista.semaphore2.release();
+        	Aeroporto.p2.semaphore.release();
         }
 	}
 
