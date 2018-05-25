@@ -42,6 +42,9 @@ public class Aeroporto {
 class Pista implements Runnable {
 	private int idPista;
 	
+	final static Semaphore semaphore1 = new Semaphore(1);
+    final static Semaphore semaphore2 = new Semaphore(1);
+    
     // Lista de avioes designados para decolar na pista
     private LinkedList<Aviao> avioes = new LinkedList<Aviao>();
 
@@ -52,11 +55,20 @@ class Pista implements Runnable {
 
     @Override
     public void run() {
+    	ExecutorService executorService = Executors.newCachedThreadPool();
+
     	while(avioes.isEmpty() != true) {
     		Aviao nextOnFiFo = avioes.remove();
     		// remove aviao decolado da lista
-    		nextOnFiFo.decolar(idPista);
+    		executorService.execute(nextOnFiFo);
     	}
+    	executorService.shutdown();
+        try {
+			executorService.awaitTermination(2, TimeUnit.MINUTES);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
     
 	public Aviao remove() {
@@ -69,7 +81,7 @@ class Pista implements Runnable {
 
 }
 
-class Aviao {
+class Aviao implements Runnable {
     private int id;
     
     public Aviao(int id) {
@@ -79,36 +91,62 @@ class Aviao {
     private static final SecureRandom gerador = new SecureRandom();
     
     int idPista = gerador.nextInt(2);
-    
-    private final Semaphore semaphore1 = new Semaphore(1);
-    private final Semaphore semaphore2 = new Semaphore(2);
-    
-    public void decolar(int idPista) {
-    	//Aviao decola em pista 1
-        if(idPista == 0){
+
+	public int getId() {
+		return id;
+	}
+
+	@Override
+	public void run() {
+		
+		acquireSemaforo(idPista);	
+		
+        System.out.println("AV" +id +" Iniciando processo de decolagem. Na Pista " + idPista);	
+        
+        manobrar(idPista);
+        
+        taxiar(idPista);
+        
+        posicionar(idPista);
+        
+        acelerar(idPista);
+        
+        decolar_avi(idPista);
+        
+        afastar(idPista);
+        
+        realeaseSemaforo(idPista);
+		
+	}
+	
+	private void acquireSemaforo(int idPista) {
+		if(idPista == 0){
         	try {
-                semaphore1.acquire();
+                Pista.semaphore1.acquire();
         	} catch (InterruptedException ex) {
                 Logger.getLogger(Aviao.class.getName()).log(Level.SEVERE, null, ex);
         	}
         }
-        //Aviao decola em pista 2
         else if(idPista == 1){
         	try {
-                semaphore2.acquire();
+        		Pista.semaphore2.acquire();
             } catch (InterruptedException ex) {
                 Logger.getLogger(Aviao.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }	
-        
-        try {
-            semaphore1.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Aviao.class.getName()).log(Level.SEVERE, null, ex);
         }
-	
-        System.out.println("AV" +id +" Iniciando processo de decolagem. Na Pista " + idPista);		
-        System.out.println("AV" +id +" Manobrando... Na Pista " + idPista);
+	}
+	private void realeaseSemaforo(int idPista) {
+		if(idPista == 0){
+			Pista.semaphore1.release();
+        }
+        //Aviao decola em pista 2
+        else if(idPista == 1){
+        	Pista.semaphore2.release();
+        }
+	}
+
+	private void manobrar(int idPista) {
+		System.out.println("AV" +id +" Manobrando... Na Pista " + idPista);
         
         try {
             Thread.sleep(3000 + gerador.nextInt(5000));
@@ -116,52 +154,55 @@ class Aviao {
             e.printStackTrace();
         }
         System.out.println("AV" +id +" Terminou de manobrar. Na Pista " + idPista);
-        
-        System.out.println("AV" +id +" Taxiando... Na Pista " + idPista);
+	}
+
+	private void taxiar(int idPista) {
+		System.out.println("AV" +id +" Taxiando... Na Pista " + idPista);
         try {
             Thread.sleep(2000 + gerador.nextInt(4000));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         System.out.println("AV" +id +" Terminou de taxiar. Na Pista " + idPista);
-        
-        System.out.println("AV" +id +" Posicionando...");
+	}
+
+	private void posicionar(int idPista) {
+		System.out.println("AV" +id +" Posicionando...");
         try {
             Thread.sleep(1000 + gerador.nextInt(4000));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         System.out.println("AV" +id +" Terminou de posicionar. Na Pista " + idPista);
-        
-        System.out.println("AV" +id +" Acelerando... Na Pista " + idPista);
+	}
+
+	private void acelerar(int idPista) {
+		System.out.println("AV" +id +" Acelerando... Na Pista " + idPista);
         try {
             Thread.sleep(3000 + gerador.nextInt(3000));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         System.out.println("AV" +id +" Terminou de acelerar. Na Pista " + idPista);
-        
-        System.out.println("AV" +id +" Decolando... Na Pista " + idPista);
+	}
+
+	private void decolar_avi(int idPista) {
+		System.out.println("AV" +id +" Decolando... Na Pista " + idPista);
         try {
             Thread.sleep(40 + gerador.nextInt(4000));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         System.out.println("AV" +id +" Terminou de decolar. Na Pista " + idPista);
-        
-        System.out.println("AV" +id +" Afastando... Na Pista " + idPista);
+	}
+
+	private void afastar(int idPista) {
+		System.out.println("AV" +id +" Afastando... Na Pista " + idPista);
         try {
             Thread.sleep(20 + gerador.nextInt(5000));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         System.out.println("AV" +id +" Terminou de se afastar. Na Pista " + idPista);
-        
-        semaphore1.release();
-    }
-
-	public int getId() {
-		return id;
 	}
 }
-  
